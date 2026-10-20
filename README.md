@@ -1,6 +1,6 @@
 <h1 align="center">dots-tailscale</h1>
 
-<p align="center">English · <a href="README.ko.md">한국어</a></p>
+<p align="center">English · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ko.md">한국어</a></p>
 
 Run Tailscale with user-level OpenSSH in a Dots cloud computer. Installation files, node state, and SSH identity live in `/workspace`; runtime sockets, PIDs, and logs are recreated in `/tmp`.
 
@@ -56,4 +56,6 @@ Install all four source files from [v0.3.1](https://github.com/abruption/dots-ta
 | `home-persistence-probe.py` | Record HOME and `/workspace` continuity markers |
 | `tests/` | Offline regression tests |
 
-See the [English usage guide](docs/usage.md), [Korean usage guide](docs/usage.ko.md), and [MIT License](LICENSE).
+See the [English usage guide](docs/usage.md), [Chinese installation and usage guide](docs/usage.zh-CN.md), [Korean usage guide](docs/usage.ko.md), and [MIT License](LICENSE).
+
+The Chinese documentation also covers an [observed sandbox environment](docs/sandbox-environment.zh-CN.md) and a [manual OpenSSH PTY compatibility fix](docs/openssh-pty-fix.zh-CN.md). The fix addresses interactive sessions that disconnect when the sandbox has no mapping for the `tty` group; it is not applied automatically by this installer.
