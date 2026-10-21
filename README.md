@@ -1,16 +1,18 @@
 <h1 align="center">dots-tailscale</h1>
 
-<p align="center">English · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ko.md">한국어</a></p>
+<p align="center">English · <a href="README.ko.md">한국어</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a></p>
 
 Run Tailscale with user-level OpenSSH in a Dots cloud computer. Installation files, node state, and SSH identity live in `/workspace`; runtime sockets, PIDs, and logs are recreated in `/tmp`.
 
 This setup targets environments that preserve `/workspace`. Processes still need a start command in each new environment. This project is independent and is not an official OpenAI or Tailscale tool.
 
+For an agent performing an installation on a user's behalf, follow the [Chinese agent installation workflow](docs/agent-install.zh-CN.md). It covers execution contexts, the browser-authentication handoff, conditional OpenSSH PTY repair, and separate SSH command and interactive-session checks. See also the [observed sandbox environment](docs/sandbox-environment.zh-CN.md).
+
 ## Demo
 
 ![Dots terminal screenshot showing installation checks and Tailscale version 1.102.4](docs/assets/dots-tailscale-ssh-verification.png)
 
-A screenshot provided by the maintainer from the Dots desktop terminal. It shows existing installation checks and status, plus Tailscale version 1.102.4. The supplied image is used unchanged. No new installation is performed in this screenshot.
+This screenshot, provided by the maintainer, shows the existing installation checks and status, plus Tailscale version 1.102.4, in the Dots desktop terminal. The image is used unchanged; it does not show a new installation or a VM replacement.
 
 ```bash
 bash /workspace/.dots-tailscale/start.sh check
@@ -26,7 +28,7 @@ The clone command explicitly uses the Dots proxy because direct GitHub HTTPS fai
 ```bash
 cd /workspace
 HTTPS_PROXY=http://browser-proxy:8889 HTTP_PROXY=http://browser-proxy:8889 \
-  git clone --branch v0.3.1 --depth 1 https://github.com/abruption/dots-tailscale.git
+  git clone --branch v0.4.0 --depth 1 https://github.com/abruption/dots-tailscale.git
 cd dots-tailscale
 bash tailscale-setup.sh check
 bash tailscale-setup.sh install
@@ -35,9 +37,9 @@ bash /workspace/.dots-tailscale/start.sh login
 
 The first login prints an approval URL. Add the client public key to the installed SSH `authorized_keys` file and verify the host-key fingerprint over the cloud computer's GUI terminal before connecting. After environment replacement, start the existing installation with `bash /workspace/.dots-tailscale/start.sh`. The scripts do not register automatic startup.
 
-## v0.3.1: diagnostics and private HTTP access
+## v0.4.0: diagnostics and private HTTP access
 
-Install all four source files from [v0.3.1](https://github.com/abruption/dots-tailscale/releases/tag/v0.3.1) to use these helpers.
+Install the four source files and `source-manifest.json` together from [v0.4.0](https://github.com/abruption/dots-tailscale/releases/tag/v0.4.0) to use these helpers.
 
 ```bash
 /workspace/.dots-tailscale/dots-ts doctor
@@ -47,15 +49,20 @@ Install all four source files from [v0.3.1](https://github.com/abruption/dots-ta
 
 `doctor` reads local diagnostics without changing state. `cli` selects the installed Tailscale binary and socket. Optional loopback SOCKS5/HTTP proxies are disabled by default and require a separately reviewed daemon restart to enable. See the [usage guide](docs/usage.md#development-helpers) and [private HTTP API recipe](docs/private-http-api.md) for configuration, access policy, and validation limits. These proxies do not automatically configure ChatGPT connectors, MCP clients, or the Dots browser.
 
+## Installed package version and updates
+
+v0.4.0 adds `dots-ts version` and `dots-ts version --json` to show the dots-tailscale package version separately from the Tailscale binary version. These commands are not included in v0.3.1. See [package version and file verification](docs/usage.md#package-version).
+
+v0.4.0 also includes stable-release checks, opt-in cached notifications and verified manual updates with code-only rollback. See [update management](docs/usage.md#update-management) for requirements, recovery-terminal confirmation and the separate external SSH check.
+
 ## Included
 
 | Path | Purpose |
 |---|---|
-| `tailscale-setup.sh`, `shim.py` | Check, install, start, and explicitly authenticate Tailscale with local SSH |
+| `tailscale-setup.sh`, `shim.py` | Check, install, and start Tailscale; configure local OpenSSH; authenticate Tailscale explicitly |
 | `dots-ts`, `dots_proxy.py` | CLI, diagnostics, and optional per-process outbound proxy configuration |
+| `source-manifest.json` | Package version and SHA-256 checksums for the four source files |
 | `home-persistence-probe.py` | Record HOME and `/workspace` continuity markers |
 | `tests/` | Offline regression tests |
 
-See the [English usage guide](docs/usage.md), [Chinese installation and usage guide](docs/usage.zh-CN.md), [Korean usage guide](docs/usage.ko.md), and [MIT License](LICENSE).
-
-The Chinese documentation also covers an [observed sandbox environment](docs/sandbox-environment.zh-CN.md) and a [manual OpenSSH PTY compatibility fix](docs/openssh-pty-fix.zh-CN.md). The fix addresses interactive sessions that disconnect when the sandbox has no mapping for the `tty` group; it is not applied automatically by this installer.
+See the [English usage guide](docs/usage.md), [Korean usage guide](docs/usage.ko.md), [Simplified Chinese usage guide](docs/usage.zh-CN.md), [Japanese usage guide](docs/usage.ja.md), and [MIT License](LICENSE).

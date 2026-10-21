@@ -181,11 +181,28 @@ preflight() {
   [[ "$port_start" -le 22 ]] || fail 'unprivileged port 22 unavailable'
 }
 install_all() {
+  local source_layout=source
+  [[ "$(basename -- "${BASH_SOURCE[0]}")" != setup.sh ]] || source_layout=installed
+  [[ -f "$SOURCE/dots-ts" ]] || fail 'missing companion dots-ts'
+  python3 "$SOURCE/dots-ts" _verify-package "$SOURCE" "$source_layout" "$SOURCE" || fail 'invalid source bundle; download all four files and source-manifest.json together'
   require curl; require tar; require sha256sum
   local shim_source="$SOURCE/shim.py"
-  [[ -f "$shim_source" ]] || shim_source="$SOURCE/shim/shim.py"
+  [[ "$source_layout" != installed ]] || shim_source="$SOURCE/shim/shim.py"
   [[ -f "$shim_source" ]] || fail "missing companion shim.py"
   [[ -f "$SOURCE/dots-ts" && -f "$SOURCE/dots_proxy.py" ]] || fail 'missing companions: dots-ts and dots_proxy.py (download the complete source set)'
+  # Refuse all known code/metadata conflicts before placing any payload.
+  local source_name installed_name source_path
+  for source_name in tailscale-setup.sh shim.py dots-ts dots_proxy.py source-manifest.json; do
+    case "$source_name" in
+      tailscale-setup.sh) installed_name=setup.sh; source_path="${BASH_SOURCE[0]}";;
+      shim.py) installed_name=shim/shim.py; source_path="$shim_source";;
+      *) installed_name="$source_name"; source_path="$SOURCE/$source_name";;
+    esac
+    [[ ! -L "$D/$installed_name" ]] || fail "symlink refused: $D/$installed_name"
+    if [[ -e "$D/$installed_name" ]]; then
+      cmp -s "$source_path" "$D/$installed_name" || fail "existing file differs: $D/$installed_name (manual review required)"
+    fi
+  done
   local tmp tgz url want got
   tmp="$(mktemp -d "$R/install.XXXXXX")"
   trap 'rm -rf -- "$tmp"' RETURN
@@ -249,6 +266,8 @@ export DOTS_TS_DIR
 exec bash "$DOTS_TS_DIR/setup.sh" "${1:-start}"
 START
   place "$tmp/start.sh" "$D/start.sh" 700
+  python3 "$SOURCE/dots-ts" _verify-package "$D" installed "$SOURCE" || fail 'installed source verification failed'
+  place "$SOURCE/source-manifest.json" "$D/source-manifest.json" 600
   printf 'persistent installation\n' > "$D/installed"
   printf 'installed: %s\n' "$D"
 }
@@ -401,7 +420,12 @@ case "$state" in
       printf 'authentication_command_failed: backend is running but the explicit authentication command failed\n' >&2
       exit "$AUTH_COMMAND_STATUS"
     fi
-    : > "$D/authenticated"; printf 'running: Tailscale and local SSH ready\n';;
+    : > "$D/authenticated"; printf 'running: Tailscale and local SSH ready\n'
+    # Opt-in cached notice only. Never let a notice change readiness or stdout.
+    if [[ "$MODE" = start && -t 2 ]]; then
+      timeout --foreground --kill-after=1s 1s python3 "$D/dots-ts" update notifications notify >/dev/null || true
+    fi
+    ;;
   NeedsLogin) printf 'needs_auth: run bash %s/setup.sh login\n' "$D"; exit 10;;
   NeedsMachineAuth) printf 'needs_machine_auth: approve this existing device in the Tailscale admin console\n'; exit 13;;
   *) printf 'unavailable: BackendState=%s\n' "$state"; exit 11;;
