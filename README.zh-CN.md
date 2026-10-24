@@ -8,12 +8,6 @@
 
 本方案适用于会保留 `/workspace` 的环境。每次进入新环境后，仍需运行启动命令。本项目独立开发，并非 OpenAI 或 Tailscale 的官方工具。
 
-## Agent 安装入口
-
-需要让 Agent 代为安装时，请直接转交[Agent 安装与 SSH 验证流程](docs/agent-install.zh-CN.md)。该文档按执行顺序说明沙箱与客户端的分工、首次安装与已有安装的处理、认证链接的交接，以及 SSH 命令和交互终端的验收。Agent 受托部署时应完成这条流程，不能仅执行本页的快速开始命令就宣布安装成功。
-
-[沙箱环境与限制](docs/sandbox-environment.zh-CN.md)记录了已检查实例的权限、网络、资源和预装软件；[OpenSSH 交互终端修复](docs/openssh-pty-fix.zh-CN.md)记录了 `tty` 组未映射时的处理。PTY 修复仍需按条件手工应用，安装器没有自动集成。
-
 ## 演示
 
 ![Dots 终端中的安装检查以及 Tailscale 版本 1.102.4 截图](docs/assets/dots-tailscale-ssh-verification.png)

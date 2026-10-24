@@ -8,8 +8,6 @@ Run Tailscale with user-level OpenSSH in a Dots cloud computer. Installation fil
 
 This setup targets environments that preserve `/workspace`. Processes still need a start command in each new environment. This project is independent and is not an official OpenAI or Tailscale tool.
 
-For an agent performing an installation on a user's behalf, follow the [Chinese agent installation workflow](docs/agent-install.zh-CN.md). It covers execution contexts, the browser-authentication handoff, conditional OpenSSH PTY repair, and separate SSH command and interactive-session checks. See also the [observed sandbox environment](docs/sandbox-environment.zh-CN.md).
-
 ## Demo
 
 ![Dots terminal screenshot showing installation checks and Tailscale version 1.102.4](docs/assets/dots-tailscale-ssh-verification.png)
